@@ -71,11 +71,13 @@ package com.tontonpiero.gcommand {
 			}
 		}
 		
-		static public function exec(command:String, ...params):void {
+		static public function dispatch(command:String, ...params):void {
 			if ( !command ) return;
 			if ( !_helper ) _helper = new GHelper();
-			var strCommand:String = "$<font color='#008000'>" + command + "</font> ";
-			if ( params.length > 0 ) strCommand += "<font color='#800000'>\"" + params.join("\" \"") + "\"</font>";
+			//var strCommand:String = "$<font color='#008000'>" + command + "</font> ";
+			//if ( params.length > 0 ) strCommand += "<font color='#800000'>\"" + params.join("\" \"") + "\"</font>";
+			var strCommand:String = "$" + command + " ";
+			if ( params.length > 0 ) strCommand += "\"" + params.join("\" \"") + "\"";
 			if ( _inputCallback != null ) {
 				var tempCallback:Function = _inputCallback;
 				_inputCallback = null;
@@ -109,13 +111,13 @@ package com.tontonpiero.gcommand {
 				dispCommands = oldVal;
 			}
 			else {
-				out("Error : unhandled command");
+				//out("Error : unhandled command");
 			}
 		}
 		
 		static public function execLine(commandLine:String):void {
 			var params:Array = extractParams(commandLine);
-			exec.apply(null, params);
+			dispatch.apply(null, params);
 		}
 		
 		static private function extractParams(commandLine:String):Array {
