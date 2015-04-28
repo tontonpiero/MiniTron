@@ -9,8 +9,6 @@ package com.tontonpiero.gcommand {
 		
 		public function dispose():void { GC.removeListener(this); }
 		
-		public function dispach(event:String, ...params):void { GC.dispatch.apply(this, [this].concat(params)); }
-		
 	}
 
 }

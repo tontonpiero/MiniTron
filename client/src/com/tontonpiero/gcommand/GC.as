@@ -14,6 +14,9 @@ package com.tontonpiero.gcommand {
 		static public var scripts:* = null;
 		static public var dispCommands:Boolean = true;
 		
+		static public const TYPE_COMMAND:String = "command";
+		static public const TYPE_EVENT:String = "event";
+		
 		public function GC() {}
 		
 		static public function addListener(thisObj:*):void {
@@ -71,53 +74,67 @@ package com.tontonpiero.gcommand {
 			}
 		}
 		
-		static public function dispatch(command:String, ...params):void {
-			if ( !command ) return;
+		static public function exec(command:String, ...params):* {
+			if ( !command ) return false;
 			if ( !_helper ) _helper = new GHelper();
-			//var strCommand:String = "$<font color='#008000'>" + command + "</font> ";
-			//if ( params.length > 0 ) strCommand += "<font color='#800000'>\"" + params.join("\" \"") + "\"</font>";
-			var strCommand:String = "$" + command + " ";
-			if ( params.length > 0 ) strCommand += "\"" + params.join("\" \"") + "\"";
 			if ( _inputCallback != null ) {
 				var tempCallback:Function = _inputCallback;
 				_inputCallback = null;
 				tempCallback.call(null, command + (params.length > 0 ? " \"" + params.join("\" \"") + "\"" : ""));
-				return;
+				return true;
 			}
-			if( dispCommands ) out(strCommand);
-			if( _commands[command] ) {
+			if ( dispCommands ) {
+				var strCommand:String = "$<font color='#008000'>" + command + "</font> ";
+				if ( params.length > 0 ) strCommand += "<font color='#800000'>\"" + params.join("\" \"") + "\"</font>";
+				out(strCommand);
+			}
+			return _callListeners(TYPE_COMMAND, command, params);
+		}
+		
+		static public function dispatch(eventName:String, ...params):void {
+			if ( !eventName ) return;
+			if ( !_helper ) _helper = new GHelper();
+			_callListeners(TYPE_EVENT, eventName, params);
+		}
+		
+		static private function _callListeners(type:String, name:String, params:Array):* {
+			if( _commands[name] ) {
 				var obj:*;
-				var method:String = "$" + command;
-				for (obj in _commands[command].objects) {
+				var method:String = "$" + name;
+				var result:* = false;
+				for (obj in _commands[name].objects) {
 					if ( obj && obj.hasOwnProperty(method) ) {
 						try {
-							obj[method].apply(obj, params);
+							result = obj[method].apply(obj, params);
 						}
 						catch (err:Error){
 							out(err.message);
 						}
+						if ( type == TYPE_COMMAND ) return result;
 					}
 				}
 			}
-			else if ( scripts[command] ) {
+			else if ( scripts[name] ) {
 				var oldVal:Boolean = dispCommands;
 				dispCommands = false;
-				for each (var line:String in scripts[command]) {
+				for each (var line:String in scripts[name]) {
 					for (var i:int = 0; i < params.length; i++) {
 						line = line.replace("$" + i, params[i])
 					}
 					execLine(line);
 				}
 				dispCommands = oldVal;
+				return true;
 			}
 			else {
-				//out("Error : unhandled command");
+				if ( type == TYPE_COMMAND ) out("Error : unhandled " + type);
 			}
+			return false;
 		}
 		
 		static public function execLine(commandLine:String):void {
 			var params:Array = extractParams(commandLine);
-			dispatch.apply(null, params);
+			exec.apply(null, params);
 		}
 		
 		static private function extractParams(commandLine:String):Array {

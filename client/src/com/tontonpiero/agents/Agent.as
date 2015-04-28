@@ -7,45 +7,77 @@ package com.tontonpiero.agents {
 	 * @author Tontonpiero
 	 */
 	public class Agent extends GListener {
-		public var speed:Number = 1;
-		public var position:Point;
-		public var direction:Point;
-		public var state:String = AgentState.INACTIVE;
+		static private var _agents:* = {};
 		
-		public function Agent() {
+		public var type:String = "unknown";
+		public var id:String = null;
+		public var speed:Number = 1;
+		public var oldPosition:Point = new Point();
+		public var position:Point = new Point();
+		public var direction:Point = new Point();
+		public var state:String = null;
+		public var hasMoved:Boolean = false;
+		
+		public function Agent(type:String, id:String = null) {
+			super();
+			this.type = type;
+			if ( !id ) {
+				while (id == null || _agents[id]) {
+					id = int(Math.random() * 1000000000).toString(36).toUpperCase();
+				}
+			}
+			this.id = id;
+			_agents[id] = this;
 			
+			create();
+		}
+		
+		public function setState(newState:String):void {
+			if ( state != newState ) {
+				GC.dispatch("onAgentStateChange", this, state, newState);
+				state = newState;
+			}
+		}
+		
+		public function create():void {
+			setState(AgentState.INACTIVE);
 		}
 		
 		public function activate():void {
 			if ( state == AgentState.INACTIVE ) setState(AgentState.IDLE);
 		}
 		
-		public function setState(newState:String):void {
-			if ( state != newState ) {
-				state = newState;
-				//dispach("
-			}
-		}
-		
 		public function deactivate():void {
-			
+			setState(AgentState.INACTIVE);
 		}
 		
 		public function destroy():void {
-			
+			setState(AgentState.DESTROYED);
 		}
 		
-		public function think():void {
-			
+		public function think():void {}
+		
+		public function move():void {}
+		
+		public function draw():void {}
+		
+		public function $onEnterFrame():void {
+			hasMoved = false;
+			if ( state == AgentState.DESTROYED ) return;
+			if( state != AgentState.INACTIVE ) {
+				think();
+				
+				if ( state == AgentState.MOVING ) {
+					oldPosition.x = position.x;
+					oldPosition.y = position.y;
+					move();
+					if ( oldPosition.x != position.x || oldPosition.y != position.y ) hasMoved = true;
+				}
+				draw();
+			}
 		}
 		
-		public function move():void {
-			
-		}
-		
-		public function draw():void {
-			
-		}
+		public function toString():String { return "[Agent #" + id + " type=\"" + type + "\"]"; }
 		
 	}
 
