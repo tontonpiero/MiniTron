@@ -1,4 +1,5 @@
 package minitron.board {
+	import com.tontonpiero.agents.Agent;
 	import com.tontonpiero.agents.AgentGroup;
 	import com.tontonpiero.gcommand.GC;
 	import flash.display.Sprite;
@@ -14,15 +15,13 @@ package minitron.board {
 	public class GameBoard extends Sprite {
 		private var agents:AgentGroup;
 		public var size:Point = new Point(800, 800);
-		public var container_agents:Sprite;
+		public var map:GameMap;
 		
 		public function GameBoard() {
-			container_agents = new Sprite();
-			//container_agents.graphics.beginFill(0x161616);
-			//container_agents.graphics.drawRect(0, 0, size.x, size.y);
-			//container_agents.graphics.endFill();
-			addChild(container_agents);
+			scaleX = scaleY = 1.5;
 			
+			map = new GameMap(size);
+			addChild(map);
 			
 			var m:Sprite = new Sprite();
 			m.graphics.beginFill(0x00FF00);
@@ -32,7 +31,7 @@ package minitron.board {
 			m.y = -200;
 			addChild(m);
 			
-			container_agents.mask = m;
+			map.mask = m;
 			
 			agents = new AgentGroup("all");
 			agents.add(new MainPlayer(this));
@@ -50,14 +49,19 @@ package minitron.board {
 		}
 		
 		public function $onMainPlayerMoved(player:MainPlayer):void {
-			container_agents.x = -player.position.x;
-			container_agents.y = -player.position.y;
+			map.x = -player.position.x;
+			map.y = -player.position.y;
+			
+			var res:int = map.testPosition(player);
+			if ( res == 1 ) player.closePath();
 		}
 		
 		public function drawRect(color:uint, x:Number, y:Number, width:Number, height:Number):void {
-			container_agents.graphics.beginFill(color);
-			container_agents.graphics.drawRect(x, y, width, height);
-			container_agents.graphics.endFill();
+			map.drawRect(color, x, y, width, height);
+		}
+		
+		public function drawPoly(color:uint, points:Array):void {
+			map.drawPoly(color, points);
 		}
 		
 	}

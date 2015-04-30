@@ -10,7 +10,7 @@ package minitron.agents.moving {
 	 */
 	public class Player extends Agent {
 		protected var board:GameBoard;
-		protected var color:uint = 0;
+		public var color:uint = 0;
 		
 		public function Player(type:String = "player", board:GameBoard = null) {
 			this.board = board;
@@ -30,7 +30,7 @@ package minitron.agents.moving {
 		
 		override public function move():void {
 			super.move();
-			position = position.add(direction);
+			position.offset(direction.x * speed, direction.y * speed);
 			var width:Number = board.size.x;
 			var height:Number = board.size.y;
 			if ( position.x >= width ) position.x -= width;
@@ -46,10 +46,10 @@ package minitron.agents.moving {
 			}
 		}
 		
-		public function goLeft():void { if ( direction.x == 0 ) { direction.x = -1; direction.y = 0; } }
-		public function goUp():void { if ( direction.y == 0 ) { direction.x = 0; direction.y = -1; } }
-		public function goRight():void { if ( direction.x == 0 ) { direction.x = 1; direction.y = 0; } }
-		public function goDown():void { if ( direction.y == 0 ) { direction.x = 0; direction.y = 1; } }
+		public function goLeft():Boolean { if ( direction.x == 0 ) { direction.x = -1; direction.y = 0; return true; } else return false; }
+		public function goUp():Boolean { if ( direction.y == 0 ) { direction.x = 0; direction.y = -1; return true; } else return false; }
+		public function goRight():Boolean { if ( direction.x == 0 ) { direction.x = 1; direction.y = 0; return true; } else return false; }
+		public function goDown():Boolean { if ( direction.y == 0 ) { direction.x = 0; direction.y = 1; return true; } else return false; }
 		
 	}
 

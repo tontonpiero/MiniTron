@@ -33,9 +33,10 @@ package com.tontonpiero.agents {
 		}
 		
 		public function setState(newState:String):void {
+			var oldState:String = state;
 			if ( state != newState ) {
-				GC.dispatch("onAgentStateChange", this, state, newState);
 				state = newState;
+				GC.dispatch("onAgentStateChange", this, oldState, newState);
 			}
 		}
 		
@@ -53,6 +54,7 @@ package com.tontonpiero.agents {
 		
 		public function destroy():void {
 			setState(AgentState.DESTROYED);
+			dispose();
 		}
 		
 		public function think():void {}
